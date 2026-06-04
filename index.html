@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VibeRun</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <div id="game-shell">
+        <div id="game-root"></div>
+        <div class="hud">
+            <div class="hud-card">
+                <h1>VibeRun</h1>
+                <div class="hud-row"><span>Heart</span><strong id="heartRateValue">-- BPM</strong></div>
+                <div class="hud-row"><span>Source</span><strong id="heartSourceValue">Socket idle</strong></div>
+                <div class="hud-row hud-row-debug"><span>Socket</span><strong id="heartSocketUrlValue">--</strong></div>
+                <div class="hud-row hud-row-debug"><span>Last</span><strong id="heartSocketLastValue">--</strong></div>
+                <div class="hud-row hud-row-debug"><span>Raw</span><strong id="heartRawValue">--</strong></div>
+                <div class="hud-row hud-row-debug"><span>Parsed</span><strong id="heartParsedValue">--</strong></div>
+                <div class="hud-row"><span>Difficulty</span><strong id="difficultyValue">1.00x</strong></div>
+                <div class="hud-row"><span>Speed</span><strong id="speedValue">0</strong></div>
+                <div class="hud-row"><span>Score</span><strong id="scoreValue">0</strong></div>
+                <div class="hud-row"><span>Gems</span><strong id="gemValue">0</strong></div>
+                <div class="hud-row"><span>Pool</span><strong id="poolValue">0/0</strong></div>
+                <label class="hud-control">
+                    <span>Game speed <strong id="speedScaleValue">1.00x</strong></span>
+                    <input id="speedScaleInput" type="range" min="0.70" max="1.60" step="0.05" value="1.00" />
+                </label>
+                <label class="hud-toggle">
+                    <input id="heartSimInput" type="checkbox" />
+                    <span>Sim heart rate</span>
+                </label>
+            </div>
+            <div class="hint">
+                Click or press Space to double jump. HeartSocket connects to <span>ws://10.34.74.90:12121</span> and changes the run speed from live BPM.
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+    <script src="src/config.js"></script>
+    <script src="src/heartSocket.js"></script>
+    <script src="src/audio.js"></script>
+    <script src="src/textures.js"></script>
+    <script src="src/systems/BackgroundSystem.js"></script>
+    <script src="src/systems/SpawnerSystem.js"></script>
+    <script src="src/scenes/VibeRunScene.js"></script>
+    <script src="src/main.js"></script>
+</body>
+</html>

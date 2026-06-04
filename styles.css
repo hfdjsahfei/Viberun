@@ -1,0 +1,161 @@
+:root {
+    color-scheme: dark;
+    --panel: rgba(12, 5, 38, 0.72);
+    --border: rgba(255, 154, 255, 0.46);
+    --text: #fff7ff;
+    --muted: rgba(255, 247, 255, 0.72);
+    --accent: #ffe66d;
+    --danger: #ff74d4;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: #050014;
+    font-family: "Courier New", "Microsoft YaHei", monospace;
+    color: var(--text);
+    image-rendering: pixelated;
+}
+
+#game-shell,
+#game-root {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+#game-root canvas {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+.hud {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.hud-card {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    min-width: 230px;
+    padding: 12px 14px;
+    border: 2px solid var(--border);
+    border-radius: 0;
+    background: var(--panel);
+    box-shadow: 0 0 0 2px rgba(30, 7, 76, 0.9), 0 12px 0 rgba(0, 0, 0, 0.24);
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
+}
+
+.hud-card h1 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    letter-spacing: 0;
+    color: var(--accent);
+}
+
+.hud-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    margin-top: 7px;
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.hud-row strong {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.hud-row strong.hot {
+    color: var(--danger);
+}
+
+.hud-row-debug {
+    align-items: start;
+}
+
+.hud-row-debug strong {
+    max-width: 150px;
+    overflow: hidden;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hud-control,
+.hud-toggle {
+    display: grid;
+    gap: 7px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--muted);
+    pointer-events: auto;
+}
+
+.hud-control span {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.hud-control input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.hud-toggle {
+    grid-template-columns: 16px 1fr;
+    align-items: center;
+    cursor: pointer;
+}
+
+.hud-toggle input {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    accent-color: var(--accent);
+}
+
+.hint {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    max-width: min(380px, calc(100vw - 28px));
+    padding: 10px 12px;
+    border: 2px solid rgba(133, 238, 255, 0.42);
+    border-radius: 0;
+    background: rgba(6, 2, 29, 0.68);
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
+}
+
+@media (max-width: 720px) {
+    .hud-card {
+        min-width: 190px;
+        padding: 10px;
+    }
+
+    .hud-row {
+        font-size: 12px;
+        gap: 10px;
+    }
+
+    .hint {
+        display: none;
+    }
+}
