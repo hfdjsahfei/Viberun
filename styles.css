@@ -121,7 +121,55 @@ body {
     align-items: center;
     cursor: pointer;
 }
+.hud-url-input {
+    display: grid;
+    gap: 7px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--muted);
+    pointer-events: auto;
+}
 
+.hud-url-input span {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.hud-url-input input {
+    width: 100%;
+    padding: 4px 6px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    border-radius: 0;
+}
+
+.hud-url-input input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.hud-url-input button {
+    background: var(--border);
+    border: none;
+    color: var(--text);
+    padding: 4px 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    transition: opacity 0.2s;
+}
+
+.hud-url-input button:hover {
+    opacity: 0.8;
+}
+
+.hud-url-input button:active {
+    transform: scale(0.98);
+}
 .hud-toggle input {
     width: 14px;
     height: 14px;

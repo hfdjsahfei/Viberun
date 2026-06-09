@@ -57,13 +57,17 @@
 
         spawnHazardPattern(worldSpeed, difficulty) {
             const roll = Phaser.Math.Between(0, 99);
-            if (roll < 48) {
+            
+            // 新的概率分配：
+            // 40% 下落尖刺 | 20% 地面尖刺（从地下冒出）| 30% 尖刺群 + 平台
+            if (roll < 40) {
                 this.spawnFallingSpike(worldSpeed, difficulty);
-                return;
+            } else if (roll < 60) {
+                this.spawnEmergingSpike(worldSpeed, difficulty);  // 新增：冒刺
+            } else {
+                this.spawnSpikeField(worldSpeed);
+                this.spawnPlatform(worldSpeed, true);
             }
-
-            this.spawnSpikeField(worldSpeed);
-            this.spawnPlatform(worldSpeed, true);
         }
 
         spawnFallingSpike(worldSpeed, difficulty) {
@@ -81,6 +85,142 @@
             spike.kind = "fallingSpike";
         }
 
+        showGroundCrack(x, groundY) {
+            const crack = this.scene.add.graphics();
+            crack.lineStyle(3, 0xff6633, 0.9);  // 线条加粗
+            
+            // 绘制更大的裂纹
+            crack.beginPath();
+            crack.moveTo(x - 25, groundY - 8);
+            crack.lineTo(x - 15, groundY - 18);
+            crack.lineTo(x - 5, groundY - 12);
+            crack.lineTo(x, groundY - 20);
+            crack.lineTo(x + 10, groundY - 14);
+            crack.lineTo(x + 20, groundY - 22);
+            crack.lineTo(x + 30, groundY - 10);
+            crack.lineTo(x + 38, groundY - 15);
+            crack.strokePath();
+            
+            // 添加裂纹周围的暗色区域
+            crack.fillStyle(0x441122, 0.5);
+            crack.fillRect(x - 30, groundY - 25, 70, 30);
+            
+            crack.setDepth(5);
+            
+            // 裂纹淡出消失（时间稍长）
+            this.scene.tweens.add({
+                targets: crack,
+                alpha: 0,
+                duration: 800,
+                onComplete: () => {
+                    crack.destroy();
+                }
+            });
+        }
+        
+        spawnEmergingSpike(worldSpeed, difficulty) {
+            const spike = this.obtain(this.obstacles, "spike");
+            if (!spike) {
+                return;
+            }
+            
+            // 改为更靠近玩家的位置（从屏幕右侧更近的地方生成）
+            // 原来：屏幕宽度的55%到屏幕外+100
+            // 现在：屏幕宽度的35%到65%（更靠近玩家）
+            const minX = Math.floor(this.scene.scale.width * 0.35);
+            const maxX = Math.floor(this.scene.scale.width * 0.65);
+            const x = Phaser.Math.Between(minX, maxX);
+            
+            const groundY = this.scene.groundY;
+            const startY = groundY + 30;      // 起始位置更深（+25 → +30）
+            const endY = groundY - 45;        // 冒出更高（-28 → -45，尖刺更大更长）
+            
+            // 尖刺显示尺寸加大（42,52 → 56,70）
+            this.resetSprite(spike, x, startY, 56, 70);
+            spike.body.setSize(40, 62);       // 碰撞箱也加大
+            spike.body.setOffset(8, 4);
+            spike.body.setVelocityX(-worldSpeed * 0.3);  // 移动速度减慢，更聚焦在玩家附近
+            
+            spike.kind = "emergingSpike";
+            spike.emergingProgress = 0;
+            spike.emergingSpeed = 0.12 + difficulty * 0.04;  // 冒出速度加快
+            spike.startY = startY;
+            spike.endY = endY;
+            spike.isEmerging = true;
+            
+            // 显示警告（警告位置也相应调整）
+            this.showSpikeWarning(x, groundY);
+            
+            // 添加地面裂纹效果
+            this.showGroundCrack(x, groundY);
+        }
+        
+        showSpikeWarning(x, groundY) {
+            // 加大警告标识，更明显
+            const warning = this.scene.add.rectangle(x, groundY - 20, 45, 12, 0xff3366);
+            warning.setAlpha(0.85);
+            warning.setDepth(10);
+            
+            // 添加外发光效果
+            const glow = this.scene.add.rectangle(x, groundY - 20, 60, 20, 0xff0000);
+            glow.setAlpha(0.3);
+            glow.setDepth(9);
+            glow.setBlendMode(Phaser.BlendModes.ADD);
+            
+            // 闪烁动画（更快更明显）
+            this.scene.tweens.add({
+                targets: [warning, glow],
+                alpha: { from: 0.85, to: 0.2 },
+                duration: 200,
+                repeat: 3,
+                yoyo: true,
+                onComplete: () => {
+                    warning.destroy();
+                    glow.destroy();
+                }
+            });
+            
+            // 添加地面震动效果（可选）
+            this.scene.cameras.main.shake(80, 0.003);
+        }
+        addEmergeShockwave(x, y) {
+            // 创建圆形冲击波
+            const shockwave = this.scene.add.circle(x, y + 20, 5, 0xff6633);
+            shockwave.setAlpha(0.8);
+            shockwave.setDepth(8);
+            
+            this.scene.tweens.add({
+                targets: shockwave,
+                scale: 3,
+                alpha: 0,
+                duration: 300,
+                onComplete: () => {
+                    shockwave.destroy();
+                }
+            });
+            
+            // 添加粒子效果（尘土飞扬）
+            for (let i = 0; i < 8; i++) {
+                const dust = this.scene.add.rectangle(
+                    x + Phaser.Math.Between(-15, 15),
+                    y + 15,
+                    4, 4,
+                    0xaa8866
+                );
+                dust.setAlpha(0.6);
+                
+                this.scene.tweens.add({
+                    targets: dust,
+                    y: dust.y - Phaser.Math.Between(10, 25),
+                    alpha: 0,
+                    scale: 0,
+                    duration: 400,
+                    onComplete: () => {
+                        dust.destroy();
+                    }
+                });
+            }
+        }
         spawnSpikeField(worldSpeed) {
             const count = Phaser.Math.Between(5, 8);
             for (let i = 0; i < count; i += 1) {
@@ -156,11 +296,36 @@
                 if (!item || !item.active) {
                     return;
                 }
-
-                if (item.kind !== "fallingSpike") {
+                
+                // 处理冒刺动画
+                if (item.kind === "emergingSpike" && item.isEmerging) {
+                    item.emergingProgress += item.emergingSpeed;
+                    
+                    if (item.emergingProgress >= 1) {
+                        // 冒出完成时增加冲击波效果
+                        this.addEmergeShockwave(item.x, item.y);
+                        item.y = item.endY;
+                        item.isEmerging = false;
+                        item.body.setVelocityX(-worldSpeed);
+                        item.kind = "floorSpike";
+                        item.clearTint();
+                        item.setAlpha(1);
+                    } else {
+                        // 使用更明显的缓动曲线
+                        const easeProgress = Math.pow(item.emergingProgress, 1.2);
+                        item.y = item.startY + (item.endY - item.startY) * easeProgress;
+                        // 冒出时震动更明显
+                        item.setAngle(Math.sin(item.emergingProgress * Math.PI * 6) * 8);
+                        // 逐渐显示尖刺（从半透明到不透明）
+                        item.setAlpha(0.5 + item.emergingProgress * 0.5);
+                    }
+                    return;
+                }
+                
+                if (item.kind !== "fallingSpike" && item.kind !== "emergingSpike") {
                     item.body.setVelocityX(-worldSpeed);
                 }
-
+                
                 if (item.x < -140 || item.y > this.scene.scale.height + 140) {
                     this.release(group, item);
                 }
@@ -173,6 +338,12 @@
             item.body.enable = false;
             item.kind = "";
             item.collectible = false;
+            // 清理冒刺相关属性
+            delete item.isEmerging;
+            delete item.emergingProgress;
+            delete item.emergingSpeed;
+            delete item.startY;
+            delete item.endY;
         }
 
         releaseSprite(sprite) {

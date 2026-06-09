@@ -18,6 +18,16 @@
                 <div class="hud-row hud-row-debug"><span>Last</span><strong id="heartSocketLastValue">--</strong></div>
                 <div class="hud-row hud-row-debug"><span>Raw</span><strong id="heartRawValue">--</strong></div>
                 <div class="hud-row hud-row-debug"><span>Parsed</span><strong id="heartParsedValue">--</strong></div>
+                
+                <!-- 新增：WebSocket URL 输入框 -->
+                <div class="hud-url-input">
+                    <span>WebSocket URL</span>
+                    <div style="display: flex; gap: 6px;">
+                        <input id="socketUrlInput" type="text" placeholder="ws://ip:port" />
+                        <button id="socketUrlApply">应用</button>
+                    </div>
+                </div>
+                
                 <div class="hud-row"><span>Difficulty</span><strong id="difficultyValue">1.00x</strong></div>
                 <div class="hud-row"><span>Speed</span><strong id="speedValue">0</strong></div>
                 <div class="hud-row"><span>Score</span><strong id="scoreValue">0</strong></div>

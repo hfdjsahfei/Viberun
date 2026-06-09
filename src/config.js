@@ -20,7 +20,7 @@
         simMin: 68,
         simMax: 138,
         simRetargetMs: 1300,
-        socketUrl: "ws://10.34.74.90:12121",
+        socketUrl: "ws://10.68.155.118:12121",  // 默认值
         reconnectMs: 2200
     };
 

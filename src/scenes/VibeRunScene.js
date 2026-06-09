@@ -71,10 +71,15 @@
             this.controls = {
                 speedScale: document.getElementById("speedScaleInput"),
                 speedScaleValue: document.getElementById("speedScaleValue"),
-                heartSim: document.getElementById("heartSimInput")
+                heartSim: document.getElementById("heartSimInput"),
+                socketUrlInput: document.getElementById("socketUrlInput"),
+                socketUrlApply: document.getElementById("socketUrlApply")
             };
             if (this.controls.heartSim) {
                 this.controls.heartSim.checked = this.simHeartRate;
+            }
+            if (this.controls.socketUrlInput) {
+                this.controls.socketUrlInput.value = window.VibeRun.HEART_RATE.socketUrl;
             }
         }
 
@@ -133,24 +138,59 @@
             this.gameOverText = this.add.text(centerX, centerY - 10, "", textStyle).setOrigin(0.5).setVisible(false);
         }
 
+        updateSocketUrl(newUrl) {
+            // 更新配置中的 URL
+            window.VibeRun.HEART_RATE.socketUrl = newUrl;
+            
+            // 更新 HUD 显示
+            if (this.hud.heartSocketUrl) {
+                this.hud.heartSocketUrl.textContent = newUrl;
+            }
+            
+            // 重新连接 WebSocket
+            if (this.heartSocket) {
+                this.heartSocket.close();
+                this.heartSocket = null;
+            }
+            
+            // 如果当前不是模拟模式，则连接新 WebSocket
+            if (!this.simHeartRate) {
+                this.connectHeartSocket();
+                this.heartRateSource = "socket";
+            }
+            
+            // 显示提示
+            console.log(`[HeartSocket] URL changed to: ${newUrl}`);
+            
+            // 可选：显示临时反馈
+            const applyBtn = this.controls.socketUrlApply;
+            if (applyBtn) {
+                const originalText = applyBtn.textContent;
+                applyBtn.textContent = "✓ 已应用";
+                setTimeout(() => {
+                    if (applyBtn) applyBtn.textContent = originalText;
+                }, 1500);
+            }
+        }
+
         bindInput() {
             this.input.on("pointerdown", async () => {
                 await this.audioEngine.resume();
                 this.startOrJump();
             });
-
+        
             this.input.keyboard.on("keydown-SPACE", async () => {
                 await this.audioEngine.resume();
                 this.startOrJump();
             });
-
+        
             if (this.controls.speedScale) {
                 this.controls.speedScale.addEventListener("input", () => {
                     this.speedScale = Number(this.controls.speedScale.value) || 1;
                     this.refreshHud(true);
                 });
             }
-
+        
             if (this.controls.heartSim) {
                 this.controls.heartSim.addEventListener("change", () => {
                     this.simHeartRate = this.controls.heartSim.checked;
@@ -158,6 +198,28 @@
                     this.nextHeartRetargetAt = 0;
                     this.heartRateSource = this.simHeartRate ? "sim" : "socket";
                     this.refreshHud(true);
+                });
+            }
+        
+            // WebSocket URL 输入处理
+            if (this.controls.socketUrlApply) {
+                this.controls.socketUrlApply.addEventListener("click", () => {
+                    const newUrl = this.controls.socketUrlInput.value.trim();
+                    if (newUrl) {
+                        this.updateSocketUrl(newUrl);
+                    }
+                });
+            }
+        
+            // 按回车键也可以应用
+            if (this.controls.socketUrlInput) {
+                this.controls.socketUrlInput.addEventListener("keypress", (e) => {
+                    if (e.key === "Enter") {
+                        const newUrl = this.controls.socketUrlInput.value.trim();
+                        if (newUrl) {
+                            this.updateSocketUrl(newUrl);
+                        }
+                    }
                 });
             }
         }
@@ -334,8 +396,9 @@
             if (!obstacle || obstacle.collectible || obstacle.kind === "gem" || obstacle.texture.key === "gem") {
                 return false;
             }
-
-            return obstacle.kind === "fallingSpike" || obstacle.kind === "floorSpike";
+            
+            // 包含冒刺类型
+            return obstacle.kind === "fallingSpike" || obstacle.kind === "floorSpike" || obstacle.kind === "emergingSpike";
         }
 
         handleCrash() {
